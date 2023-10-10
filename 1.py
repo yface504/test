@@ -24,7 +24,7 @@ if response.status_code == 200:
 
     # 找到第二个表格元素
     tables = soup.find_all('table')
-    target_table = tables[0]  # 第二个表格
+    target_table = tables[1]  # 第二个表格
 
     # 初始化关键字位置的变量
     keyword_position = None
@@ -32,7 +32,7 @@ if response.status_code == 200:
     # 在整个表格中搜索关键字
     for i, td in enumerate(target_table.find_all('td')):
         # 如果关键字"100日元/人民币"在<td>元素中
-        if "日元" in td.get_text():
+        if "美元/人民币" in td.get_text():
             keyword_position = i  # 记录关键字位置
             break  # 找到后停止寻找
 
@@ -42,11 +42,11 @@ if response.status_code == 200:
         print("未找到关键字")
 
     #獲取100日元該行的下1格數值
-    td_elements = tables[0].find_all('td')
-    numeric_value = float(td_elements[i + 4].get_text()) / 100
-     # 格式化numeric_value为小数点后4位
-    formatted_value = "{:.4f}".format(numeric_value)
-    print("目标数值:", formatted_value)
+    td_elements = tables[1].find_all('td')
+    target_td = td_elements[i+1]  # 这里选择了第十个<td>元素
+    target_value = target_td.get_text()
+    numeric_value = float(target_value) / 100
+    print("目标数值:", numeric_value)
 
 else:
     print("HTTP请求失败，状态码:", response.status_code)

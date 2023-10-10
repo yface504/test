@@ -1,1 +1,21 @@
-tfff
+
+A
+表格=0，关键字="新台币"，公式=(float(td_elements[i + 2].get_text())+float(td_elements[i + 4].get_text()))/200
+
+B
+表格=1，关键字="100日元/人民币"，公式=float(td_elements[i + 1].get_text()) / 100
+
+C
+表格=1，关键字="美元/人民币"，公式=float(td_elements[i+1].get_text())
+
+D
+表格=0，关键字="日元"，公式=float(td_elements[i + 1].get_text()) / 100
+
+E
+表格=0，关键字="日元"，公式=float(td_elements[i + 4].get_text()) / 100
+
+F
+表格=0，关键字="美元"，公式=float(td_elements[i + 1].get_text()) / 100
+
+G
+表格=0，关键字="美元"，公式=float(td_elements[i + 4].get_text()) / 100
