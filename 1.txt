@@ -1,63 +1,45 @@
+def convert_xlsx_sheet_to_csv(xlsx_file_path, sheet_index, output_csv_file_path):
+    try:
+        # 查询匹配的publisher数据
+        publisher = Publisher.objects.filter(shelf_name=tw_shelf_name).first()
 
-A 表格=0，关键字="新台币"，公式=(float(td_elements[i + 2].get_text())+float(td_elements[i + 4].get_text()))/200
-B 表格=1，关键字="100日元/人民币"，公式=float(td_elements[i + 1].get_text()) / 100
-C 表格=1，关键字="美元/人民币"，公式=float(td_elements[i+1].get_text())
-D 表格=0，关键字="日元"，公式=float(td_elements[i + 1].get_text()) / 100
-E 表格=0，关键字="日元"，公式=float(td_elements[i + 4].get_text()) / 100
-F 表格=0，关键字="美元"，公式=float(td_elements[i + 1].get_text()) / 100
-G 表格=0，关键字="美元"，公式=float(td_elements[i + 4].get_text()) / 100
+        if publisher:
+            # 提取需要的数据
+            tw_fees = publisher.fees_percentage
+            tw_ratio = publisher.ratio_percentage
+            tw_name = publisher.name
 
+            # 获取 titleDate 值
+            file_name_parts = os.path.splitext(os.path.basename(output_csv_file_path))[0].split('_')
+            titleDate = file_name_parts[0]
 
+            # 获取 area 和 exchange_rate_method 的值
+            area = publisher.area
+            exchange_rate_method = publisher.exchange_rate_method
 
-from datetime import datetime
-import calendar
-import requests
-from bs4 import BeautifulSoup
+            # 调用 FindFxRate 函数，传递 area、exchange_rate_method 和 titleDate
+            FxRate = FindFxRate(area, exchange_rate_method, titleDate)
 
-# 将字符串"20230901"转换为日期格式
-date_str = "20230801"
-new_date = datetime.strptime(date_str, "%Y%m%d")
+            # ...（其他代码不变）
 
-# 设置为该月的最后一天
-last_day = datetime(new_date.year, new_date.month, calendar.monthrange(new_date.year, new_date.month)[1])
+            # 修改 report 工作表的特定单元格
+            srs['B3'] = tw_name  # 出版社名
+            srs['F3'] = titleDate  # 報表月            
+            srs['A5'] = 'TW'
+            srs['B5'] = FxRate  # 传递 FxRate 给单元格 B5
+            srs['D5'] = tw_fees  # 手續費
+            srs['E5'] = tw_ratio  # 拆帳比
 
-# 构建 URL
-wocha = "https://chl.cn/?" + str(new_date.year) + "-" + str(new_date.month) + "-" + str(last_day.day)
+            # ...（其他代码不变）
 
-# 发送HTTP请求并获取页面内容
-response = requests.get(wocha)
-response.encoding = 'utf-8' #改變編碼解決亂碼問題
+        else:
+            print(f"找不到匹配的Publisher数据.")
 
-# 检查请求是否成功
-if response.status_code == 200:
-    # 使用Beautiful Soup解析页面内容
-    soup = BeautifulSoup(response.text, 'html.parser')
+    except Exception as e:
+        print(f"转换失败: {str(e)}")
 
-    # 找到第二个表格元素
-    tables = soup.find_all('table')
-    target_table = tables[0]  # 第二个表格
+# FindFxRate 函数接收参数 area、exchange_rate_method 和 titleDate
+def FindFxRate(area, exchange_rate_method, titleDate):
+    # ...（FindFxRate 函数的实现，包括计算 FxRate）
 
-    # 初始化关键字位置的变量
-    keyword_position = None
-
-    # 在整个表格中搜索关键字
-    for i, td in enumerate(target_table.find_all('td')):
-        # 如果关键字在<td>元素中
-        if "日元" in td.get_text():
-            keyword_position = i  # 记录关键字位置
-            break  # 找到后停止寻找
-
-    if keyword_position is not None:
-        print("关键字位置是表格的第", keyword_position, "个td")
-    else:
-        print("未找到关键字")
-
-    #獲取100日元該行的下1格數值
-    td_elements = tables[0].find_all('td')
-    numeric_value = float(td_elements[i + 4].get_text()) / 100
-     # 格式化numeric_value为小数点后4位
-    formatted_value = "{:.4f}".format(numeric_value)
-    print("目标数值:", formatted_value)
-
-else:
-    print("HTTP请求失败，状态码:", response.status_code)
+    return FxRate  # 返回 FxRate 的值

@@ -5,21 +5,21 @@ from bs4 import BeautifulSoup
 
 # 用户输入映射到表格、关键字和公式的字典
 user_input_map = {
-    'A': (0, "新台币", lambda td_elements, keyword_position: (float(td_elements[keyword_position + 2].get_text()) + float(td_elements[keyword_position + 4].get_text())) / 200),
-    'B': (1, "100日元/人民币", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
-    'C': (1, "美元/人民币", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text())),
-    'D': (0, "日元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
-    'E': (0, "日元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 4].get_text()) / 100),
-    'F': (0, "美元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
-    'G': (0, "美元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 4].get_text()) / 100)
+    '台湾,中间价': (0, "新台币", lambda td_elements, keyword_position: (float(td_elements[keyword_position + 2].get_text()) + float(td_elements[keyword_position + 4].get_text())) / 200),
+    '日本,中间价': (1, "100日元/人民币", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
+    '美国,中间价': (1, "美元/人民币", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text())),
+    '日本,汇款买入价': (0, "日元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
+    '日本,汇款卖出价': (0, "日元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 4].get_text()) / 100),
+    '美国,汇款买入价': (0, "美元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 1].get_text()) / 100),
+    '美国,汇款卖出价': (0, "美元", lambda td_elements, keyword_position: float(td_elements[keyword_position + 4].get_text()) / 100)
 }
 
 # 获取用户输入
 user_input = input("请输入大寫的A~G: ")
 
-# 将字符串"20230901"转换为日期格式
-date_str = "20230901"
-new_date = datetime.strptime(date_str, "%Y%m%d")
+# 将字符串"202309"转换为日期格式
+date_str = "202308"
+new_date = datetime.strptime(date_str+ '01', "%Y%m%d")
 
 # 设置为该月的最后一天
 last_day = datetime(new_date.year, new_date.month, calendar.monthrange(new_date.year, new_date.month)[1])
@@ -61,15 +61,21 @@ if response.status_code == 200:
             td_elements = target_table.find_all('td')
             result = formula(td_elements, keyword_position)
 
-            # 格式化结果为小数点后4位
-            formatted_result = "{:.4f}".format(result)
-            print("目标数值:", formatted_result)
+            # 格式化结果为小数点后6位
+            formatted_result = "{:.6f}".format(result)
+            print("目标汇率:", formatted_result)
+
+            h1s = soup.find_all('h1')
+            banktime = h1s[0].get_text()
+            print("匯率時間:", banktime)
 
         else:
             print("未找到关键字")
 
     else:
         print("无效的输入")
+        formatted_result =1
+        print("目标汇率:", formatted_result)
 
 else:
     print("HTTP请求失败，状态码:", response.status_code)
